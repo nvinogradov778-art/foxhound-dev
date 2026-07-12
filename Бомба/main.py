@@ -1,245 +1,260 @@
 import machine
+import ssd1306
 import time
-from machine import Pin, I2C, PWM
-from lcd import I2cLcd
 
-# --- НАСТРОЙКА ЖЕЛЕЗА ---
-# Используем PWM для генерации звуков разной частоты
-buzzer_pin = Pin(19, Pin.OUT)
-buzzer = PWM(buzzer_pin)
-buzzer.duty(0) # Изначально выключен
+# --- ИНИЦИАЛИЗАЦИЯ ПЕРИФЕРИИ ---
+i2c = machine.SoftI2C(sda=machine.Pin(21), scl=machine.Pin(22), freq=400000)
+oled = ssd1306.SSD1306_I2C(128, 64, i2c, addr=0x3C)
 
-led_green = Pin(2, Pin.OUT)
-led_red = Pin(4, Pin.OUT)
+speaker = machine.PWM(machine.Pin(19))
+speaker.duty(0)
 
-# Настройка дисплея I2C
-i2c = I2C(0, scl=Pin(22), sda=Pin(21), freq=400000)
-lcd = I2cLcd(i2c, 0x27, 2, 16)
+btn_up     = machine.Pin(14, machine.Pin.IN, machine.Pin.PULL_UP) 
+btn_ok     = machine.Pin(27, machine.Pin.IN, machine.Pin.PULL_UP) 
+btn_down   = machine.Pin(33, machine.Pin.IN, machine.Pin.PULL_UP) 
+btn_player = machine.Pin(13, machine.Pin.IN, machine.Pin.PULL_UP) 
 
-# Настройка клавиатуры 4х4
-row_pins = [13, 12, 14, 27]
-col_pins = [26, 25, 33, 32]
-rows = [Pin(pin, Pin.OUT) for pin in row_pins]
-cols = [Pin(pin, Pin.IN, Pin.PULL_DOWN) for pin in col_pins]
+lives = 100
+game_minutes = 45
+wave_minutes = 5  
 
-KEYMAP = [
-    ['1', '2', '3', 'A'],
-    ['4', '5', '6', 'B'],
-    ['7', '8', '9', 'C'],
-    ['*', '0', '#', 'D']
-]
+max_seconds = game_minutes * 60
+seconds_left = max_seconds
 
-# --- УЛУЧШЕННЫЕ ЗВУКОВЫЕ ЭФФЕКТЫ ---
-def tone(freq, duration_ms):
-    """Генерация звука определенной частоты"""
-    if freq == 0:
-        buzzer.duty(0)
+max_wave_seconds = wave_minutes * 60
+wave_seconds_left = max_wave_seconds
+
+timer_active = False
+state_menu = True
+
+def beep(freq, duration_ms):
+    try:
+        speaker.freq(freq)
+        speaker.duty(512)
         time.sleep_ms(duration_ms)
+        speaker.duty(0)
+        time.sleep_ms(5) 
+    except:
+        pass
+
+def play_sound(sound_type):
+    if sound_type == "click":        beep(1200, 35)
+    elif sound_type == "click_down": beep(800, 35)
+    elif sound_type == "ok":
+        try:
+            speaker.freq(1000); speaker.duty(512); time.sleep_ms(60)
+            speaker.duty(0); time.sleep_ms(20) # Пауза между нотами
+            speaker.freq(1400); speaker.duty(512); time.sleep_ms(80)
+            speaker.duty(0)
+        except: pass
+    elif sound_type == "start":
+        for _ in range(2): beep(880, 150); time.sleep_ms(40)
+        beep(1300, 400)
+    elif sound_type == "death":      beep(2300, 200)
+    elif sound_type == "respawn_cancel":
+        try:
+            speaker.duty(512)
+            speaker.freq(900); time.sleep_ms(60)
+            speaker.freq(1200); time.sleep_ms(60)
+            speaker.freq(1600); time.sleep_ms(120)
+            speaker.duty(0)
+        except: pass
+    elif sound_type == "pause":      beep(600, 80); time.sleep_ms(40); beep(400, 120)
+    elif sound_type == "resume":     beep(450, 60); time.sleep_ms(40); beep(800, 100)
+    elif sound_type == "wave_release":
+        for _ in range(3): beep(1100, 400); time.sleep_ms(100)
+    elif sound_type == "game_over":
+        try:
+            speaker.duty(512)
+            for _ in range(2):
+                for f in range(350, 950, 50): 
+                    speaker.freq(f)
+                    time.sleep_ms(8)
+                for f in range(950, 350, -50): 
+                    speaker.freq(f)
+                    time.sleep_ms(8)
+            speaker.duty(0)
+        except: pass
+
+
+def check_click(button_pin):
+    if button_pin.value() == 0:
+        time.sleep_ms(40) 
+        if button_pin.value() == 0:
+            while button_pin.value() == 0: time.sleep_ms(5) 
+            return True
+    return False
+
+def render_setup_ui(step_title, current_val, metric=""):
+    oled.fill(0)
+    oled.rect(0, 0, 128, 64, 1)
+    oled.fill_rect(2, 2, 124, 13, 1)
+    oled.text("SETUP", 44, 5, 0)
+    
+    oled.text(step_title, 8, 25, 1)
+    
+    if step_title == "WAVE TIME:" and current_val == 0:
+        val_str = "< WAVE: OFF >"
     else:
-        buzzer.freq(freq)
-        buzzer.duty(512) # 50% громкости
-        time.sleep_ms(duration_ms)
-        buzzer.duty(0)
+        val_str = "< {} {} >".format(current_val, metric)
+        
+    x_offset = 64 - (len(val_str) * 4)
+    oled.text(val_str, x_offset, 45, 1)
+    oled.show() 
 
-def sound_click(): tone(1000, 50)
-def sound_error(): tone(300, 300)
-def sound_unlock():
-    tone(800, 100)
-    time.sleep_ms(50)
-    tone(1200, 150)
-def sound_arm():
-    for f in range(800, 2000, 200):
-        tone(f, 40)
-def sound_defused():
-    tone(1500, 200)
-    tone(1800, 200)
-    tone(2200, 400)
-
-# --- СКАНЕР КЛАВИАТУРЫ ---
-def get_key():
-    for r_idx, row in enumerate(rows):
-        row.value(1)
-        for c_idx, col in enumerate(cols):
-            if col.value() == 1:
-                row.value(0)
-                while col.value() == 1:
-                    time.sleep_ms(10)
-                return KEYMAP[r_idx][c_idx]
-        row.value(0)
-    return None
-
-# --- ИГРОВЫЕ ПЕРЕМЕННЫЕ ---
-unlock_code = "7777"   # Код для разблокировки клавиатуры
-secret_code = "1234"   # Код для разминирования бомбы
-countdown_seconds = 45 # Стандартное время таймера
-
-input_buffer = ""
-is_unlocked = False    # Статус блокировки клавиатуры
-is_armed = False       # Статус активности бомбы
-last_tick = time.ticks_ms()
-
-# --- СТАТУСНЫЕ ЭКРАНЫ ---
-def show_locked():
-    global input_buffer
-    input_buffer = ""
-    led_green.value(0)
-    led_red.value(0)
-    lcd.clear()
-    lcd.move_to(0, 0)
-    lcd.putstr("KEYPAD LOCKED")
-    lcd.move_to(0, 1)
-    lcd.putstr("Enter Code: ")
-
-def show_ready():
-    global input_buffer
-    input_buffer = ""
-    led_green.value(1)
-    led_red.value(0)
-    lcd.clear()
-    lcd.move_to(0, 0)
-    lcd.putstr("UNLOCKED! A=MENU")
-    lcd.move_to(0, 1)
-    lcd.putstr("Press * to ARM")
-
-# --- СЕКРЕТНОЕ МЕНЮ НАСТРОЕК ---
-def open_menu():
-    global secret_code, countdown_seconds
-    sound_unlock()
+def config_session():
+    global lives, game_minutes, wave_minutes, max_seconds, seconds_left, max_wave_seconds, wave_seconds_left, state_menu, timer_active
+    state_menu = True
+    timer_active = False
     
-    # 1. Настройка времени
-    lcd.clear()
-    lcd.move_to(0, 0)
-    lcd.putstr("SET TIME (SEC):")
-    lcd.move_to(0, 1)
-    lcd.putstr("> ")
-    time_str = ""
+    render_setup_ui("TOTAL LIVES:", lives)
     while True:
-        k = get_key()
-        if k and k.isdigit() and len(time_str) < 3:
-            sound_click()
-            time_str += k
-            lcd.move_to(2, 1)
-            lcd.putstr(time_str)
-        elif k == '#':
-            if time_str: countdown_seconds = int(time_str)
+        if check_click(btn_up):
+            lives = 10 if lives >= 990 else lives + 10
+            render_setup_ui("TOTAL LIVES:", lives)
+            play_sound("click")
+        elif check_click(btn_down):
+            lives = 990 if lives <= 10 else lives - 10
+            render_setup_ui("TOTAL LIVES:", lives)
+            play_sound("click_down")
+        elif check_click(btn_ok):
+            play_sound("ok")
             break
-            
-    # 2. Настройка нового кода разминирования
-    sound_unlock()
-    lcd.clear()
-    lcd.move_to(0, 0)
-    lcd.putstr("SET DEFUSE CODE:")
-    lcd.move_to(0, 1)
-    lcd.putstr("> ")
-    code_str = ""
+        time.sleep_ms(10)
+
+    render_setup_ui("MATCH TIME:", game_minutes, "MIN")
     while True:
-        k = get_key()
-        if k and k.isdigit() and len(code_str) < 6:
-            sound_click()
-            code_str += k
-            lcd.move_to(2, 1)
-            lcd.putstr(code_str)
-        elif k == '#':
-            if code_str: secret_code = code_str
+        if check_click(btn_up):
+            game_minutes = 5 if game_minutes >= 180 else game_minutes + 5
+            render_setup_ui("MATCH TIME:", game_minutes, "MIN")
+            play_sound("click")
+        elif check_click(btn_down):
+            game_minutes = 180 if game_minutes <= 5 else game_minutes - 5
+            render_setup_ui("MATCH TIME:", game_minutes, "MIN")
+            play_sound("click_down")
+        elif check_click(btn_ok):
+            play_sound("ok")
             break
-            
-    sound_defused()
-    show_ready()
+        time.sleep_ms(10)
 
-# Инициализация запуска
-show_locked()
+    render_setup_ui("WAVE TIME:", wave_minutes, "MIN")
+    while True:
+        if check_click(btn_up):
+            wave_minutes = 0 if wave_minutes >= 30 else wave_minutes + 1
+            render_setup_ui("WAVE TIME:", wave_minutes, "MIN")
+            play_sound("click")
+        elif check_click(btn_down):
+            wave_minutes = 30 if wave_minutes <= 0 else wave_minutes - 1
+            render_setup_ui("WAVE TIME:", wave_minutes, "MIN")
+            play_sound("click_down")
+        elif check_click(btn_ok):
+            play_sound("start")
+            break
+        time.sleep_ms(10)
 
-# --- ОСНОВНОЙ ЦИКЛ ---
+    max_seconds = game_minutes * 60
+    seconds_left = max_seconds
+    
+    max_wave_seconds = wave_minutes * 60
+    wave_seconds_left = max_wave_seconds
+    
+    state_menu = False
+    timer_active = True
+    render_game_ui()
+
+def render_game_ui():
+    oled.fill(0)
+    m, s = seconds_left // 60, seconds_left % 60
+    time_str = "{:02d}:{:02d}".format(m, s)
+    
+    if max_wave_seconds == 0:
+        oled.rect(0, 0, 128, 64, 1)
+        oled.hline(0, 16, 128, 1)
+        oled.text("MISSION TIMER", 12, 5, 1)
+        oled.text("TIME: {}".format(time_str), 16, 26, 1)
+        oled.line(0, 44, 128, 44, 1)
+        oled.text("LIVES LEFT: {}".format(lives), 8, 51, 1)
+        
+    else:
+        wm, ws = wave_seconds_left // 60, wave_seconds_left % 60
+        wave_str = "{:02d}:{:02d}".format(wm, ws)
+        
+        oled.text("M:{}".format(time_str), 2, 4, 1)
+        oled.text("LIVES:{}".format(lives), 66, 4, 1)
+        oled.hline(0, 15, 128, 1)
+        
+        oled.text("NEXT WAVE IN:", 12, 22, 1)
+        oled.text("[ {} ]".format(wave_str), 36, 36, 1)
+        
+        oled.fill_rect(0, 53, 128, 11, 1)
+        if max_wave_seconds > 0:
+            fill_width = int(124 * (wave_seconds_left / max_wave_seconds))
+            oled.fill_rect(2, 55, fill_width, 7, 0)
+
+    if seconds_left == 0:
+        oled.fill_rect(4, 16, 120, 32, 0)
+        oled.rect(4, 16, 120, 32, 1)
+        oled.text("GAME OVER!", 24, 28, 1)
+    elif not timer_active:
+        oled.fill_rect(4, 16, 120, 32, 0)
+        oled.rect(4, 16, 120, 32, 1)
+        oled.text("- PAUSED -", 24, 28, 1)
+        
+    oled.show()
+
+# --- СТАРТ ТОЧКИ ---
+config_session()
+last_time_checkpoint = time.ticks_ms()
+
+# --- ГЛАВНЫЙ ИГРОВОЙ ЦИКЛ ---
 while True:
-    key = get_key()
-    
-    if key:
-        # 1. ЕСЛИ КЛАВИАТУРА ЗАБЛОКИРОВАНА
-        if not is_unlocked and not is_armed:
-            if key.isdigit() and len(input_buffer) < 6:
-                sound_click()
-                input_buffer += key
-                lcd.move_to(12, 1)
-                lcd.putstr("*" * len(input_buffer))
-            elif key == '#':
-                if input_buffer == unlock_code:
-                    is_unlocked = True
-                    sound_unlock()
-                    show_ready()
-                else:
-                    sound_error()
-                    lcd.move_to(0, 1)
-                    lcd.putstr("WRONG CODE!     ")
-                    time.sleep(1)
-                    show_locked()
+    if not state_menu:
+        if check_click(btn_ok):
+            config_session()
+            last_time_checkpoint = time.ticks_ms()
+            continue
 
-        # 2. ЕСЛИ КЛАВИАТУРА РАЗБЛОКИРОВАНА (Ожидание закладки бомбы)
-        elif is_unlocked and not is_armed:
-            if key == '*':
-                is_armed = True
-                is_unlocked = False # Клавиатура снова закрывается при старте
-                input_buffer = ""
-                sound_arm()
-                led_green.value(0)
-                led_red.value(1)
-                lcd.clear()
-                lcd.putstr("ARMED! RUN!")
-                time.sleep(1.5)
-                lcd.clear()
-                last_tick = time.ticks_ms()
-                current_timer = countdown_seconds
-            elif key == 'A': # Вход в меню настроек
-                open_menu()
+        if check_click(btn_up) or check_click(btn_down):
+            timer_active = not timer_active
+            render_game_ui()
+            if timer_active: play_sound("resume")
+            else: play_sound("pause")
 
-        # 3. ЕСЛИ БОМБА ВЗВЕДЕНА (Идет обратный отсчет)
-        elif is_armed:
-            if key == '#':
-                if input_buffer == secret_code:
-                    is_armed = False
-                    sound_defused()
-                    lcd.clear()
-                    lcd.putstr("BOMB DEFUSED!")
-                    time.sleep(3)
-                    show_locked() # Возврат к полной блокировке
-                else:
-                    sound_error()
-                    input_buffer = ""
-                    lcd.move_to(0, 1)
-                    lcd.putstr("WRONG CODE!     ")
-                    time.sleep(1)
-                    lcd.move_to(0, 1)
-                    lcd.putstr("Code:           ")
-            elif key.isdigit() and len(input_buffer) < 6:
-                sound_click()
-                input_buffer += key
-                lcd.move_to(0, 1)
-                lcd.putstr(f"Code: {'*' * len(input_buffer)}   ")
-
-    # ЛОГИКА ТАЙМЕРА (Когда бомба активна)
-    if is_armed:
-        now = time.ticks_ms()
-        if time.ticks_diff(now, last_tick) >= 1000:
-            last_tick = now
-            current_timer -= 1
+        if btn_player.value() == 0:
+            hold_start = time.ticks_ms()
+            is_hold = False
+            while btn_player.value() == 0:
+                if time.ticks_diff(time.ticks_ms(), hold_start) > 2000:
+                    is_hold = True
+                    lives += 1  
+                    render_game_ui()
+                    play_sound("respawn_cancel")
+                    while btn_player.value() == 0: time.sleep_ms(10)
+                    break
+                time.sleep_ms(10)
             
-            led_red.value(not led_red.value())
-            # Динамик коротко пищит каждую секунду
-            tone(1200, 60)
-            
-            lcd.move_to(0, 0)
-            lcd.putstr(f"Time left: {current_timer}s  ")
-            
-            # Сценарий Взрыва
-            if current_timer <= 0:
-                is_armed = False
-                led_green.value(0)
-                led_red.value(1)
-                lcd.clear()
-                lcd.putstr("BOOM!!!")
-                # Воспроизведение сирены взрыва
-                for _ in range(5):
-                    tone(600, 250)
-                    tone(400, 250)
-                show_locked()
+            if not is_hold and lives > 0:
+                lives -= 1
+                render_game_ui()
+                play_sound("death")
 
-    time.sleep_ms(10)
+        if timer_active and seconds_left > 0:
+            if time.ticks_diff(time.ticks_ms(), last_time_checkpoint) >= 1000:
+                seconds_left -= 1
+                if max_wave_seconds > 0 and wave_seconds_left > 0:
+                    wave_seconds_left -= 1
+                if max_wave_seconds > 0 and wave_seconds_left == 0 and seconds_left > 0:
+                    render_game_ui()
+                    play_sound("wave_release")
+                    wave_seconds_left = max_wave_seconds
+                render_game_ui()
+                last_time_checkpoint = time.ticks_ms()
+                
+                if seconds_left == 0:
+                    timer_active = False
+                    wave_seconds_left = 0
+                    render_game_ui()
+                    play_sound("game_over")
+
+    time.sleep_ms(15)
+
