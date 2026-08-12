@@ -33,29 +33,49 @@ def beep(freq, duration_ms):
         speaker.duty(512)
         time.sleep_ms(duration_ms)
         speaker.duty(0)
+        time.sleep_ms(5) 
     except:
         pass
 
 def play_sound(sound_type):
-    if sound_type == "click":        beep(850, 25)
-    elif sound_type == "click_down": beep(600, 25)
+    if sound_type == "click":        beep(1200, 35)
+    elif sound_type == "click_down": beep(800, 35)
     elif sound_type == "ok":
-        beep(1000, 60); time.sleep_ms(20); beep(1400, 80)
+        try:
+            speaker.freq(1000); speaker.duty(512); time.sleep_ms(60)
+            speaker.duty(0); time.sleep_ms(20) # Пауза между нотами
+            speaker.freq(1400); speaker.duty(512); time.sleep_ms(80)
+            speaker.duty(0)
+        except: pass
     elif sound_type == "start":
         for _ in range(2): beep(880, 150); time.sleep_ms(40)
         beep(1300, 400)
-    elif sound_type == "death":      beep(250, 180) 
+    elif sound_type == "death":      beep(2300, 200)
     elif sound_type == "respawn_cancel":
-        beep(900, 60); time.sleep_ms(30); beep(1200, 60); time.sleep_ms(30); beep(1600, 120)
+        try:
+            speaker.duty(512)
+            speaker.freq(900); time.sleep_ms(60)
+            speaker.freq(1200); time.sleep_ms(60)
+            speaker.freq(1600); time.sleep_ms(120)
+            speaker.duty(0)
+        except: pass
     elif sound_type == "pause":      beep(600, 80); time.sleep_ms(40); beep(400, 120)
     elif sound_type == "resume":     beep(450, 60); time.sleep_ms(40); beep(800, 100)
     elif sound_type == "wave_release":
         for _ in range(3): beep(1100, 400); time.sleep_ms(100)
     elif sound_type == "game_over":
-        for _ in range(2):
-            for f in range(350, 950, 25): speaker.freq(f); speaker.duty(512); time.sleep_ms(4)
-            for f in range(950, 350, -25): speaker.freq(f); speaker.duty(512); time.sleep_ms(4)
-        speaker.duty(0)
+        try:
+            speaker.duty(512)
+            for _ in range(2):
+                for f in range(350, 950, 50): 
+                    speaker.freq(f)
+                    time.sleep_ms(8)
+                for f in range(950, 350, -50): 
+                    speaker.freq(f)
+                    time.sleep_ms(8)
+            speaker.duty(0)
+        except: pass
+
 
 def check_click(button_pin):
     if button_pin.value() == 0:
@@ -237,3 +257,4 @@ while True:
                     play_sound("game_over")
 
     time.sleep_ms(15)
+
