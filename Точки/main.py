@@ -109,14 +109,14 @@ def show_menu():
     state.in_menu = True
     state.editing = False
     lcd.clear()
-    
+
     while read_button(btn_exit, "exit"):
         time.sleep_ms(10)
-    
+
     while state.in_menu:
         lcd.move_to(0, 0)
         lcd.putstr("--- SETTINGS ---")
-        
+
         if not state.editing:
             prefix0 = ">" if state.menu_index == 0 else " "
             prefix1 = ">" if state.menu_index == 1 else " "
@@ -137,7 +137,7 @@ def show_menu():
             lcd.move_to(3, 0)
             mark2 = "*" if state.menu_index == 2 else " "
             lcd.putstr(f"{mark2}GameTime: {state.game_time:.0f}m ")
-        
+
         if read_button(btn_up, "up"):
             if not state.editing:
                 state.menu_index = max(0, state.menu_index - 1)
@@ -149,7 +149,7 @@ def show_menu():
                 else:
                     state.game_time = min(60.0, state.game_time + 1.0)
             time.sleep_ms(200)
-            
+
         elif read_button(btn_down, "down"):
             if not state.editing:
                 state.menu_index = min(2, state.menu_index + 1)
@@ -161,11 +161,11 @@ def show_menu():
                 else:
                     state.game_time = max(1.0, state.game_time - 1.0)
             time.sleep_ms(200)
-            
+
         elif read_button(btn_sel, "sel"):
             state.editing = not state.editing
             time.sleep_ms(200)
-            
+
         elif read_button(btn_exit, "exit"):
             state.in_menu = False
             state.editing = False
@@ -174,7 +174,7 @@ def show_menu():
             while read_button(btn_exit, "exit"):
                 time.sleep_ms(10)
             time.sleep_ms(100)
-        
+
         time.sleep_ms(50)
 
 def show_game_over():
@@ -192,13 +192,13 @@ def show_game_over():
         lcd.putstr("WINNER: BRAVO!")
     else:
         lcd.putstr("DRAW!")
-    
+
     led_t1.value(0)
     led_t2.value(0)
-    
+
     while not read_button(btn_exit, "exit"):
         time.sleep_ms(100)
-    
+
     state.scores = {TEAM_1: 0, TEAM_2: 0}
     state.owner = NEUTRAL
     state.game_over = False
@@ -209,20 +209,20 @@ def main():
     update_display()
     state.last_score_time = time.ticks_ms()
     state.game_start_time = time.ticks_ms()
-    
+
     while True:
         now = time.ticks_ms()
-        
+
         if state.game_over:
             time.sleep_ms(20)
             continue
-        
+
         elapsed_game = time.ticks_diff(now, state.game_start_time) / 60000
         if elapsed_game >= state.game_time:
             state.game_over = True
             show_game_over()
             continue
-        
+
         if read_button(btn_exit, "exit") and not state.in_menu and time.ticks_diff(now, state.menu_exit_time) > 1000:
             stop_tone()
             state.is_beeping = False
@@ -232,25 +232,25 @@ def main():
             show_menu()
             state.last_score_time = time.ticks_ms()
             continue
-        
+
         if state.in_menu:
             time.sleep_ms(20)
             continue
-        
+
         t1_pressed = read_button(btn_t1, "t1")
         t2_pressed = read_button(btn_t2, "t2")
         current_press = TEAM_1 if (t1_pressed and not t2_pressed and state.owner != TEAM_1) else TEAM_2 if (t2_pressed and not t1_pressed and state.owner != TEAM_2) else NEUTRAL
-        
+
         if current_press != NEUTRAL:
             if state.capturing_team != current_press:
                 state.capturing_team = current_press
                 state.capture_start_time = now
-            
+
             elapsed_ms = time.ticks_diff(now, state.capture_start_time)
             if time.ticks_diff(now, state.last_lcd_update) > 100:
                 draw_progress(elapsed_ms)
                 state.last_lcd_update = now
-            
+
             beep_state = (elapsed_ms // 200) % 2 == 0
             if beep_state != state.is_beeping:
                 if beep_state:
@@ -258,7 +258,7 @@ def main():
                 else:
                     stop_tone()
                 state.is_beeping = beep_state
-            
+
             if elapsed_ms >= state.capture_time * 1000:
                 state.owner = current_press
                 state.capturing_team = NEUTRAL
@@ -290,17 +290,17 @@ def main():
                     lcd.putstr("Owner: BRAVO        ")
                 else:
                     lcd.putstr("Owner: NEUTRAL      ")
-        
+
         if state.tone_stop_time and time.ticks_diff(now, state.tone_stop_time) >= 0:
             stop_tone()
             state.tone_stop_time = 0
-        
+
         if state.owner != NEUTRAL and time.ticks_diff(now, state.last_score_time) >= state.score_interval * 1000:
             state.scores[state.owner] += 1
             state.last_score_time = now
             lcd.move_to(2, 0)
             lcd.putstr(f"ALPH:{state.scores[TEAM_1]:04d} BRAV:{state.scores[TEAM_2]:04d}")
-        
+
         time.sleep_ms(20)
 
 main()
