@@ -22,6 +22,9 @@ class TerminalThread(private val activity: MainActivity) : Thread() {
 
     private var startTime = System.currentTimeMillis()
 
+    @Volatile
+    private var minigameResult: Boolean? = null
+
     fun getUptimeString(): String {
         val elapsed = (System.currentTimeMillis() - startTime) / 1000
         val h = elapsed / 3600
@@ -217,100 +220,23 @@ class TerminalThread(private val activity: MainActivity) : Thread() {
         return lockPointOverride?.let { "$it%" } ?: "случайно"
     }
 
-    private fun signalLockGame(): Boolean {
-        val W = 38
-        val ZONE = sigZone
-
-        arrowKey = null
-        printRaw("")
-        printRaw("  ==========================================", "#FF0000")
-        printRaw("  ================VALHALLA==================", "#FF0000")
-        printRaw("  =====ПЕРЕХВАТ ИНФОРМАЦИОННОГО ПОТОКА======", "#FF0000")
-        printRaw("  ==ENTER — стабилизировать и открыть шлюз==", "#FF0000")
-        printRaw("  ==========================================", "#FF0000")
-        printRaw("  ====>>> НАЖМИТЕ ENTER ЧТОБЫ НАЧАТЬ <<<====", "#FF0000")
-        printRaw("  ==========================================", "#FF0000")
-        printRaw("")
-
-        while (true) {
-            val key = arrowKey
-            if (key == "ENTER") {
-                arrowKey = null
-                break
-            }
-            sleep(50)
-        }
-
-        var markerPos = 0
-        var markerDir = 1
-        var speed = sigSpeed
-        var cursorPos = (W - ZONE) / 2
-        var errors = 0
-        var hits = 0
-
-        activity.appendLog(renderScale(W, ZONE, markerPos, cursorPos), "#00FF41")
-
-        var tickStart = System.currentTimeMillis()
-        while (hits < sigRounds) {
-            val key = arrowKey
-            if (key != null) {
-                arrowKey = null
-                if (key == "ENTER") {
-                    val captured = cursorPos <= markerPos && markerPos < cursorPos + ZONE
-                    if (captured) {
-                        activity.beep(1400.0, 60)
-                        hits++
-                        activity.appendLog("  [ ЗАХВАТ $hits/$sigRounds ] СИГНАЛ ЗАФИКСИРОВАН", "#00FF41")
-                        sleep(600)
-                        arrowKey = null
-                        if (hits < sigRounds) {
-                            speed = maxOf(0.03, speed * 0.75)
-                            activity.appendLog(renderScale(W, ZONE, markerPos, cursorPos), "#00FF41")
-                        }
-                    } else {
-                        activity.beep(250.0, 150)
-                        errors++
-                        val bar = "X".repeat(errors) + "O".repeat(sigMaxErrors + 1 - errors)
-                        activity.appendLog("  [!!] МИМО  [$bar]", "#FF0000")
-                        sleep(500)
-                        arrowKey = null
-                        if (errors > sigMaxErrors) return false
-                        activity.appendLog(renderScale(W, ZONE, markerPos, cursorPos), "#00FF41")
-                    }
-                    tickStart = System.currentTimeMillis()
-                }
-            }
-
-            val now = System.currentTimeMillis()
-            if (now - tickStart >= speed * 1000) {
-                markerPos += markerDir
-                if (markerPos >= W - 1) markerDir = -1
-                else if (markerPos <= 0) markerDir = 1
-                tickStart = now
-                activity.replaceLastLine(renderScale(W, ZONE, markerPos, cursorPos), "#00FF41")
-            }
-            sleep(20)
-        }
-        return true
+    private fun startMinigame(warning: String = "", instruction: String = ""): Boolean {
+        minigameResult = null
+        val title = if (warning.isNotEmpty()) warning else "ПЕРЕХВАТ СИГНАЛА"
+        val subtitle = instruction
+        activity.launchMinigame(sigRounds, sigZone, sigMaxErrors, sigSpeed, title, subtitle)
+        return waitForMinigameResult()
     }
 
-    private fun renderScale(width: Int, zone: Int, marker: Int, cursor: Int): String {
-        val cells = StringBuilder()
-        for (i in 0 until width) {
-            val inZone = cursor <= i && i < cursor + zone
-            val isMarker = i == marker
-            cells.append(
-                when {
-                    isMarker && inZone -> "*"
-                    isMarker -> "O"
-                    i == cursor -> "["
-                    i == cursor + zone - 1 -> "]"
-                    inZone -> " "
-                    else -> "."
-                }
-            )
+    private fun waitForMinigameResult(): Boolean {
+        while (minigameResult == null) {
+            sleep(100)
         }
-        return "  |$cells|"
+        return minigameResult!!
+    }
+
+    fun onMinigameResult(success: Boolean) {
+        minigameResult = success
     }
 
     private fun lockout() {
@@ -319,38 +245,52 @@ class TerminalThread(private val activity: MainActivity) : Thread() {
         sleep(400)
         activity.clearLog()
         sleep(200)
-        printRaw("")
-        printRaw("  ========================================================", "#FF0000")
-        printRaw("  ========================================================", "#FF0000")
-        printRaw("  ====ВЫЯВЛЕНА ПОПЫТКА НЕСАНКЦИОНИРОВАННОГО ВТОРЖЕНИЯ=====", "#FF0000")
-        printRaw("  ========================================================", "#FF0000")
-        printRaw("  =======ИНИЦИИРОВАНА АВАРИЙНАЯ ПЕРЕЗАГРУЗКА СИСТЕМЫ======", "#FF0000")
-        printRaw("  =======ВСЕ АКТИВНЫЕ СЕССИИ ПРИНУДИТЕЛЬНО ЗАВЕРШЕНЫ======", "#FF0000")
-        printRaw("  ========================================================", "#FF0000")
-        printRaw("  ========================================================", "#FF0000")
-        printRaw("")
-        sleep(800)
+
+        val headerLines = listOf(
+            "  ========================================================",
+            "  ========================================================",
+            "  ====ВЫЯВЛЕНА ПОПЫТКА НЕСАНКЦИОНИРОВАННОГО ВТОРЖЕНИЯ=====",
+            "  ========================================================",
+            "  =======ИНИЦИИРОВАНА АВАРИЙНАЯ ПЕРЕЗАГРУЗКА СИСТЕМЫ======",
+            "  =======ВСЕ АКТИВНЫЕ СЕССИИ ПРИНУДИТЕЛЬНО ЗАВЕРШЕНЫ======",
+            "  ========================================================",
+            "  ========================================================"
+        )
+
+        for (line in headerLines) {
+            activity.appendLog(line, "#FF0000")
+            sleep(100)
+        }
 
         val now = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
+        val incidentId = "${(10000..99999).random()}-SEC"
         val msgs = listOf(
-            "  [ $now ]  INCIDENT_ID: ${(10000..99999).random()}-SEC",
+            "  [ $now ]  INCIDENT_ID: $incidentId",
             "  [ $now ]  SOURCE: 127.0.0.1",
             "  [ $now ]  THREAT_LEVEL: CRITICAL",
             "  [ $now ]  ACTION: EMERGENCY_REBOOT_SCHEDULED"
         )
+
         for (msg in msgs) {
-            printRaw(msg, "#FF0000")
-            sleep(500)
+            activity.appendLog(msg, "#FF0000")
+            activity.beep(800.0, 80)
+            sleep(300)
         }
 
-        printRaw("")
-        printRaw("  Аварийная перезагрузка через...", "#FF0000")
+        activity.appendLog("", "#FF0000")
         for (i in 5 downTo 1) {
-            printRaw("  $i...", "#FF0000")
-            activity.beep(600.0, 100)
-            sleep(850)
+            val dots = ".".repeat(6 - i)
+            val line = "  Аварийная перезагрузка$dots"
+            activity.appendLog(line, "#FF0000")
+            activity.beep((600 + (5 - i) * 200).toDouble(), 150)
+            sleep(800)
         }
+        activity.appendLog("  Аварийная перезагрузка... ГОТОВО", "#FF0000")
         activity.beep(200.0, 1000)
+        sleep(500)
+
+        activity.clearLog()
+        sleep(300)
     }
 
     private fun mainMenuLoop() {
@@ -390,33 +330,52 @@ class TerminalThread(private val activity: MainActivity) : Thread() {
 
         val lockPoint = lockPointOverride ?: random.nextInt(30, 71)
         var lockDone = false
+        val startCopyTime = System.currentTimeMillis()
 
         for ((i, filename) in fakeFiles.withIndex()) {
             val progress = ((i + 1) * 100 / fakeFiles.size)
             if (progress >= lockPoint && !lockDone) {
                 activity.beep(900.0, 200)
-                printRaw("")
-                printRaw("[ ВНИМАНИЕ ] ШИФРОВАНИЕ БЛОКА $progress% — ТРЕБУЕТСЯ СИНХРОНИЗАЦИЯ КЛЮЧА", "#FFFF00")
-                printRaw("[ ЗАХВАТИТЕ СИГНАЛ ДЛЯ ПРОДОЛЖЕНИЯ ПЕРЕДАЧИ ]", "#FFFF00")
-                printRaw("")
-                val passed = signalLockGame()
+                val warning = "[ ВНИМАНИЕ ] ШИФРОВАНИЕ БЛОКА $progress% — ТРЕБУЕТСЯ СИНХРОНИЗАЦИЯ КЛЮЧА"
+                val instruction = "[ ЗАХВАТИТЕ СИГНАЛ ДЛЯ ПРОДОЛЖЕНИЯ ПЕРЕДАЧИ ]"
+                val passed = startMinigame(warning, instruction)
                 if (!passed) {
                     lockout()
                     return
                 }
                 activity.beep(1000.0, 100)
-                printRaw("[ OK ] КЛЮЧ СИНХРОНИЗИРОВАН. ПРОДОЛЖЕНИЕ ПЕРЕДАЧИ...", "#00FF41")
-                printRaw("")
                 lockDone = true
             }
+
             val filled = progress / 5
-            val bar = "#".repeat(filled) + ".".repeat(20 - filled)
-            printRaw("[$bar] $progress% ПЕРЕДАЧА: $filename")
+            val barColor = when {
+                progress < 50 -> "#00FF41"
+                progress < 80 -> "#FFFF00"
+                else -> "#FF4444"
+            }
+            val bar = "█".repeat(filled) + "░".repeat(20 - filled)
+            printRaw("[$bar] $progress% ПЕРЕДАЧА: $filename", barColor)
             sleep(fileDelayMs)
         }
 
+        val endCopyTime = System.currentTimeMillis()
+        val totalSeconds = (endCopyTime - startCopyTime) / 1000.0
+        val fileCount = fakeFiles.size
+        val avgSpeed = if (totalSeconds > 0) fileCount / totalSeconds else 0.0
+
         activity.beep(1200.0, 80)
-        printLine("\n[ УСПЕХ ] ПЕРЕДАЧА ЗАВЕРШЕНА. СОЕДИНЕНИЕ ЗАКРЫТО.", "#00FF41")
+
+        printLine("\n" + "=".repeat(60), "#00FF41")
+        printLine("  ПЕРЕДАЧА УСПЕШНО ЗАВЕРШЕНА", "#00FF41")
+        printLine("=".repeat(60), "#00FF41")
+        printLine("  Файлов передано: $fileCount", "#00FF41")
+        printLine("  Общее время:    ${String.format("%.2f", totalSeconds)} сек", "#00FF41")
+        printLine("  Средняя скорость: ${String.format("%.2f", avgSpeed)} файл/сек", "#00FF41")
+
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        printLine("  Завершено:      ${dateFormat.format(Date())}", "#00FF41")
+        printLine("  СОЕДИНЕНИЕ ЗАКРЫТО.", "#00FF41")
+        printLine("=".repeat(60), "#00FF41")
     }
 
     private fun waitForServerConnection() {

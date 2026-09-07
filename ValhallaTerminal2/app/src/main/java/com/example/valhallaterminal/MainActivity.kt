@@ -1,5 +1,6 @@
 package com.example.valhallaterminal
 
+import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
@@ -10,10 +11,12 @@ import android.text.Html
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ScrollView
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import kotlin.math.sin
 
@@ -24,6 +27,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var hudBar: TextView
     private lateinit var scrollView: ScrollView
     private lateinit var btnEnter: Button
+    private lateinit var statusIndicator: View
 
     private val terminalThread = TerminalThread(this)
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -34,6 +38,16 @@ class MainActivity : AppCompatActivity() {
 
     private val beepGenerator = BeepGenerator()
 
+    private val minigameLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val data = result.data
+            val gameResult = data?.getStringExtra("result")
+            terminalThread.onMinigameResult(gameResult == "SUCCESS")
+        } else {
+            terminalThread.onMinigameResult(false)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -43,6 +57,14 @@ class MainActivity : AppCompatActivity() {
         hudBar = findViewById(R.id.hud_bar)
         scrollView = findViewById(R.id.scroll_view)
         btnEnter = findViewById(R.id.btn_enter)
+        statusIndicator = findViewById(R.id.status_indicator)
+
+        inputField.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(inputField.windowToken, 0)
+            }
+        }
 
         setupKeyboard()
 
@@ -106,6 +128,8 @@ class MainActivity : AppCompatActivity() {
                 inputField.setText(prompt)
                 inputField.requestFocus()
                 inputField.setSelection(prompt.length)
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(inputField.windowToken, 0)
             } else {
                 inputField.text.clear()
                 currentPrompt = ""
@@ -177,6 +201,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return super.onKeyDown(keyCode, event)
+    }
+
+    fun launchMinigame(rounds: Int, zone: Int, maxErrors: Int, speed: Double, title: String = "ПЕРЕХВАТ СИГНАЛА", subtitle: String = "") {
+        val intent = android.content.Intent(this, MinigameActivity::class.java).apply {
+            putExtra("rounds", rounds)
+            putExtra("zone", zone)
+            putExtra("maxErrors", maxErrors)
+            putExtra("speed", speed)
+            putExtra("title", title)
+            putExtra("subtitle", subtitle)
+        }
+        minigameLauncher.launch(intent)
     }
 }
 
