@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:background="#0D0D0D">
+
+    <!-- Левая панель: терминал -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.7"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <!-- HUD -->
+        <TextView
+            android:id="@+id/hud_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:textSize="12sp"
+            android:textColor="#00FF41"
+            android:text="[ NODE: LOCAL_TTY ] | [ UPTIME: 00:00:00 ] | [ STR: 99% ] | [ 00:00:00 ]" />
+
+        <!-- Вывод терминала -->
+        <ScrollView
+            android:id="@+id/scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true"
+            android:scrollbars="vertical">
+
+            <TextView
+                android:id="@+id/log_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:textSize="14sp"
+                android:textColor="#00FF41"
+                android:background="#0D0D0D"
+                android:padding="4dp"
+                android:text="" />
+        </ScrollView>
+
+        <!-- Поле ввода -->
+        <EditText
+            android:id="@+id/input_field"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:textSize="14sp"
+            android:textColor="#00FF41"
+            android:background="#0D0D0D"
+            android:inputType="text"
+            android:imeOptions="actionDone"
+            android:enabled="false" />
+    </LinearLayout>
+
+    <!-- Правая панель: клавиатура -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.3"
+        android:orientation="vertical"
+        android:padding="8dp"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:textSize="14sp"
+            android:textColor="#00FF41"
+            android:gravity="center"
+            android:text="КЛАВИШИ" />
+
+        <!-- Цифровые кнопки -->
+        <GridLayout
+            android:id="@+id/keyboard_grid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="3"
+            android:rowCount="4"
+            android:layout_marginTop="8dp">
+
+            <!-- Строка 1 -->
+            <Button
+                android:id="@+id/btn_1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="1"
+                android:textSize="20sp"
+                android:backgroundTint="#1A1A1A"
+                android:textColor="#00FF41"
+                android:padding="12dp"
+                android:layout_margin="2dp"
+                android:stateListAnimator="@null" />
+
+            <Button
+                android:id="@+id/btn_2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="2"
+                android:textSize="20sp"
+                android:backgroundTint="#1A1A1A"
+                android:textColor="#00FF41"
+                android:padding="12dp"
+                android:layout_margin="2dp"
+                android:stateListAnimator="@null" />
+
+            <Button
+                android:id="@+id/btn_3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="3"
+                android:textSize="20sp"
+                android:backgroundTint="#1A1A1A"
+                android:textColor="#00FF41"
+                android:padding="12dp"
+                android:layout_margin="2dp"
+                android:stateListAnimator="@null" />
+
+            <!-- Строка 2 -->
+            <Button
+                android:id="@+id/btn_4"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="4"
+                android:textSize="20sp"
+                android:backgroundTint="#1A1A1A"
+                android:textColor="#00FF41"
+                android:padding="12dp"
+                android:layout_margin="2dp"
+                android:stateListAnimator="@null" />
+
+            <Button
+                android:id="@+id/btn_5"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="5"
+                android:textSize="20sp"
+                android:backgroundTint="#1A1A1A"
+                android:textColor="#00FF41"
+                android:padding="12dp"
+                android:layout_margin="2dp"
+                android:stateListAnimator="@null" />
+
+            <Button
+                android:id="@+id/btn_6"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="6"
+                android:textSize="20sp"
+                android:backgroundTint="#1A1A1A"
+                android:textColor="#00FF41"
+                android:padding="12dp"
+                android:layout_margin="2dp"
+                android:stateListAnimator="@null" />
+
+            <!-- Строка 3 -->
+            <Button
+                android:id="@+id/btn_7"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="7"
+                android:textSize="20sp"
+                android:backgroundTint="#1A1A1A"
+                android:textColor="#00FF41"
+                android:padding="12dp"
+                android:layout_margin="2dp"
+                android:stateListAnimator="@null" />
+
+            <Button
+                android:id="@+id/btn_8"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="8"
+                android:textSize="20sp"
+                android:backgroundTint="#1A1A1A"
+                android:textColor="#00FF41"
+                android:padding="12dp"
+                android:layout_margin="2dp"
+                android:stateListAnimator="@null" />
+
+            <Button
+                android:id="@+id/btn_9"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="9"
+                android:textSize="20sp"
+                android:backgroundTint="#1A1A1A"
+                android:textColor="#00FF41"
+                android:padding="12dp"
+                android:layout_margin="2dp"
+                android:stateListAnimator="@null" />
+
+            <!-- Строка 4 -->
+            <Button
+                android:id="@+id/btn_left"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="&lt;"
+                android:textSize="20sp"
+                android:backgroundTint="#1A1A1A"
+                android:textColor="#00FF41"
+                android:padding="12dp"
+                android:layout_margin="2dp"
+                android:stateListAnimator="@null" />
+
+            <Button
+                android:id="@+id/btn_0"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="0"
+                android:textSize="20sp"
+                android:backgroundTint="#1A1A1A"
+                android:textColor="#00FF41"
+                android:padding="12dp"
+                android:layout_margin="2dp"
+                android:stateListAnimator="@null" />
+
+            <Button
+                android:id="@+id/btn_right"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="&gt;"
+                android:textSize="20sp"
+                android:backgroundTint="#1A1A1A"
+                android:textColor="#00FF41"
+                android:padding="12dp"
+                android:layout_margin="2dp"
+                android:stateListAnimator="@null" />
+        </GridLayout>
+
+        <!-- Кнопка ENTER -->
+        <Button
+            android:id="@+id/btn_enter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="ENTER"
+            android:textSize="18sp"
+            android:backgroundTint="#1A3A1A"
+            android:textColor="#00FF41"
+            android:padding="16dp"
+            android:stateListAnimator="@null" />
+    </LinearLayout>
+</LinearLayout>
