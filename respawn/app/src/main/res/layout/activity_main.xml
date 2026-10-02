@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#0A0A0A"
+    android:padding="10dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        android:orientation="vertical"
+        android:background="@drawable/lcd_bg"
+        android:padding="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <View
+                android:id="@+id/ledStatus"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:background="@drawable/led_off" />
+
+            <TextView
+                android:id="@+id/lcdHeader"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="RESPAWN"
+                android:textColor="#2ECC71"
+                android:textSize="14sp"
+                android:fontFamily="monospace"
+                android:textStyle="bold"
+                android:letterSpacing="0.4"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/lcdPhase"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SETUP"
+                android:textColor="#FF6B35"
+                android:textSize="11sp"
+                android:fontFamily="monospace"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#332ECC71"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/oledLine1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ТОЧКА ВОЗРОЖДЕНИЯ"
+            android:textColor="#2ECC71"
+            android:textSize="20sp"
+            android:fontFamily="monospace"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+        <TextView
+            android:id="@+id/oledLine2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="ВСЕГО ЖИЗНЕЙ:"
+            android:textColor="#2ECC71"
+            android:textSize="26sp"
+            android:fontFamily="monospace"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+        <TextView
+            android:id="@+id/oledLine3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text=""
+            android:textColor="#2ECC71"
+            android:textSize="14sp"
+            android:fontFamily="monospace"
+            android:gravity="center" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="12dp"
+            android:layout_marginTop="10dp"
+            android:max="100"
+            android:progress="0"
+            android:progressDrawable="@drawable/progress_drawable"
+            android:visibility="invisible" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:orientation="vertical"
+        android:layout_marginTop="10dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnUp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:text="▲"
+                android:textColor="#2ECC71"
+                android:textSize="22sp"
+                android:background="@drawable/btn_ctrl"
+                android:layout_marginEnd="4dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnOk"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:text="OK"
+                android:textColor="#2ECC71"
+                android:textSize="18sp"
+                android:background="@drawable/btn_ctrl"
+                android:fontFamily="monospace"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnDown"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:text="▼"
+                android:textColor="#2ECC71"
+                android:textSize="22sp"
+                android:background="@drawable/btn_ctrl"
+                android:layout_marginStart="4dp" />
+        </LinearLayout>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnRespawn"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
+            android:layout_marginTop="8dp"
+            android:text="ВОЗРОЖДЕНИЕ"
+            android:textColor="#FF3B30"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:background="@drawable/btn_respawn"
+            android:fontFamily="monospace" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:background="#0D0D0D"
+    android:padding="6dp">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_weight="2"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/hudBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#0D0D0D"
+            android:fontFamily="monospace"
+            android:text="[ NODE: LOCAL_TTY ]"
+            android:textColor="#00FF41"
+            android:textSize="9sp"
+            android:paddingBottom="4dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#00FF41" />
+
+        <ScrollView
+            android:id="@+id/scrollView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="#0D0D0D"
+            android:scrollbars="none"
+            android:layout_marginTop="4dp">
+
+            <TextView
+                android:id="@+id/logView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:textColor="#00FF41"
+                android:textSize="11sp"
+                android:textIsSelectable="false" />
+        </ScrollView>
+
+        <EditText
+            android:id="@+id/inputDisplay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#0D0D0D"
+            android:fontFamily="monospace"
+            android:textColor="#00FF41"
+            android:textSize="13sp"
+            android:hint="..."
+            android:textColorHint="#006622"
+            android:inputType="none"
+            android:singleLine="true"
+            android:paddingVertical="6dp"
+            android:visibility="gone"
+            android:focusable="false"
+            android:clickable="false"
+            android:cursorVisible="false" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_marginStart="8dp">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2">
+
+            <LinearLayout
+                android:id="@+id/actionBar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnUsb"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:background="#00FF41"
+                    android:fontFamily="monospace"
+                    android:text="ВСТАВИТЬ USB"
+                    android:textColor="#0D0D0D"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnCancel"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_weight="1"
+                    android:background="#FF3B30"
+                    android:fontFamily="monospace"
+                    android:text="ПРЕРВАТЬ"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/miniGamePanel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#0D0D0D"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/miniGameTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:gravity="center"
+                    android:paddingBottom="4dp"
+                    android:text="SIGNAL LOCK"
+                    android:textColor="#FFFF00"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/miniGameScale"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:gravity="center"
+                    android:paddingVertical="4dp"
+                    android:textColor="#00FF41"
+                    android:textSize="10sp" />
+
+                <TextView
+                    android:id="@+id/miniGameHits"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:gravity="center"
+                    android:paddingBottom="4dp"
+                    android:textColor="#00FF41"
+                    android:textSize="9sp" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnEnter"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:background="#00FF41"
+                    android:fontFamily="monospace"
+                    android:text="СТАРТ"
+                    android:textColor="#0D0D0D"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/numpadPanel"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="3"
+            android:orientation="vertical"
+            android:layout_marginTop="6dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/nBtn1"
+                    android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent"
+                    android:text="1" android:textColor="#00FF41" android:textSize="18sp"
+                    android:background="@drawable/btn_ctrl" android:fontFamily="monospace"
+                    android:layout_margin="2dp" />
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/nBtn2"
+                    android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent"
+                    android:text="2" android:textColor="#00FF41" android:textSize="18sp"
+                    android:background="@drawable/btn_ctrl" android:fontFamily="monospace"
+                    android:layout_margin="2dp" />
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/nBtn3"
+                    android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent"
+                    android:text="3" android:textColor="#00FF41" android:textSize="18sp"
+                    android:background="@drawable/btn_ctrl" android:fontFamily="monospace"
+                    android:layout_margin="2dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/nBtn4"
+                    android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent"
+                    android:text="4" android:textColor="#00FF41" android:textSize="18sp"
+                    android:background="@drawable/btn_ctrl" android:fontFamily="monospace"
+                    android:layout_margin="2dp" />
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/nBtn5"
+                    android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent"
+                    android:text="5" android:textColor="#00FF41" android:textSize="18sp"
+                    android:background="@drawable/btn_ctrl" android:fontFamily="monospace"
+                    android:layout_margin="2dp" />
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/nBtn6"
+                    android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent"
+                    android:text="6" android:textColor="#00FF41" android:textSize="18sp"
+                    android:background="@drawable/btn_ctrl" android:fontFamily="monospace"
+                    android:layout_margin="2dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/nBtn7"
+                    android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent"
+                    android:text="7" android:textColor="#00FF41" android:textSize="18sp"
+                    android:background="@drawable/btn_ctrl" android:fontFamily="monospace"
+                    android:layout_margin="2dp" />
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/nBtn8"
+                    android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent"
+                    android:text="8" android:textColor="#00FF41" android:textSize="18sp"
+                    android:background="@drawable/btn_ctrl" android:fontFamily="monospace"
+                    android:layout_margin="2dp" />
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/nBtn9"
+                    android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent"
+                    android:text="9" android:textColor="#00FF41" android:textSize="18sp"
+                    android:background="@drawable/btn_ctrl" android:fontFamily="monospace"
+                    android:layout_margin="2dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/nBtnBack"
+                    android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent"
+                    android:text="←" android:textColor="#FFB800" android:textSize="18sp"
+                    android:background="@drawable/btn_ctrl" android:fontFamily="monospace"
+                    android:layout_margin="2dp" />
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/nBtn0"
+                    android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent"
+                    android:text="0" android:textColor="#00FF41" android:textSize="18sp"
+                    android:background="@drawable/btn_ctrl" android:fontFamily="monospace"
+                    android:layout_margin="2dp" />
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/nBtnOk"
+                    android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent"
+                    android:text="OK" android:textColor="#0D0D0D" android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:background="#00FF41" android:fontFamily="monospace"
+                    android:layout_margin="2dp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

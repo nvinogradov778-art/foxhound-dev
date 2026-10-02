@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#0A0A0A"
+    android:padding="10dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        android:orientation="vertical"
+        android:background="@drawable/lcd_bg"
+        android:padding="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <View
+                android:id="@+id/ledTeam1"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:background="@drawable/led_off" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="АЛЬФА"
+                android:textColor="#FFB800"
+                android:textSize="11sp"
+                android:fontFamily="monospace"
+                android:textStyle="bold"
+                android:layout_marginStart="6dp" />
+
+            <TextView
+                android:id="@+id/lcdHeader"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="ЗАХВАТ ТОЧКИ"
+                android:textColor="#2ECC71"
+                android:textSize="14sp"
+                android:fontFamily="monospace"
+                android:textStyle="bold"
+                android:letterSpacing="0.4"
+                android:gravity="center" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="БРАВО"
+                android:textColor="#00B4FF"
+                android:textSize="11sp"
+                android:fontFamily="monospace"
+                android:textStyle="bold"
+                android:layout_marginEnd="6dp" />
+
+            <View
+                android:id="@+id/ledTeam2"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:background="@drawable/led_off" />
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#332ECC71"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/lcdLine1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="СТАТУС: СВОБОДНА"
+            android:textColor="#2ECC71"
+            android:textSize="22sp"
+            android:fontFamily="monospace"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+
+        <TextView
+            android:id="@+id/lcdLine2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="0 : 0"
+            android:textColor="#2ECC71"
+            android:textSize="26sp"
+            android:fontFamily="monospace"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+        <!-- Status line -->
+        <TextView
+            android:id="@+id/lcdLine3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text=""
+            android:textColor="#2ECC71"
+            android:textSize="14sp"
+            android:fontFamily="monospace"
+            android:gravity="center" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="12dp"
+            android:layout_marginTop="10dp"
+            android:max="100"
+            android:progress="0"
+            android:progressDrawable="@drawable/progress_drawable"
+            android:visibility="invisible" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:orientation="vertical"
+        android:layout_marginTop="10dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="3"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnTeam1"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:text="АЛЬФА"
+                android:textColor="#FFB800"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:background="@drawable/btn_alpha"
+                android:fontFamily="monospace"
+                android:layout_marginEnd="5dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnTeam2"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:text="БРАВО"
+                android:textColor="#00B4FF"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:background="@drawable/btn_bravo"
+                android:fontFamily="monospace"
+                android:layout_marginStart="5dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnUp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:text="▲"
+                android:textColor="#2ECC71"
+                android:textSize="20sp"
+                android:background="@drawable/btn_ctrl"
+                android:layout_marginEnd="4dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnDown"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:text="▼"
+                android:textColor="#2ECC71"
+                android:textSize="20sp"
+                android:background="@drawable/btn_ctrl"
+                android:layout_marginEnd="4dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnSel"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:text="ВЫБРАТЬ"
+                android:textColor="#2ECC71"
+                android:textSize="14sp"
+                android:background="@drawable/btn_ctrl"
+                android:fontFamily="monospace"
+                android:layout_marginEnd="4dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnSettings"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:text="НАСТРОЙКИ"
+                android:textColor="#FF6B35"
+                android:textSize="14sp"
+                android:background="@drawable/btn_ctrl"
+                android:fontFamily="monospace" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

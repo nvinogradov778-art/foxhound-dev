@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#0D0D0D"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="БЛОКИРОВКА СИГНАЛА"
+        android:fontFamily="monospace"
+        android:textColor="#FFFF00"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:paddingBottom="10dp" />
+
+    <TextView
+        android:id="@+id/dlgScale"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="monospace"
+        android:textColor="#00FF41"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:paddingVertical="12dp" />
+
+    <TextView
+        android:id="@+id/dlgHits"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="monospace"
+        android:textColor="#00FF41"
+        android:textSize="11sp"
+        android:gravity="center"
+        android:paddingBottom="10dp" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/dlgEnter"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="СТАРТ"
+        android:textColor="#0D0D0D"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:fontFamily="monospace"
+        android:background="#00FF41" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/dlgCancel"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginTop="8dp"
+        android:text="ПРЕРВАТЬ"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:fontFamily="monospace"
+        android:background="#FF3B30" />
+</LinearLayout>
